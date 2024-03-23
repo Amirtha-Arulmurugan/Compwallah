@@ -1,0 +1,207 @@
+import pandas as pd
+
+# Load the dataset
+dataset = pd.read_csv(r"C:\Users\DELL\Downloads\HousePricePrediction.xlsx - Sheet1.csv")
+
+# Display the first few rows of the dataset
+print(dataset.head())
+# Check for missing values
+missing_values = dataset.isnull().sum()
+print(missing_values)
+
+# Handle missing values (if any)
+#For example:
+dataset = dataset.dropna()  # Drop rows with missing values
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+
+# Define preprocessing steps
+categorical_features = dataset.select_dtypes(include=['object']).columns
+numerical_features = dataset.select_dtypes(include=['int', 'float']).columns
+
+# Preprocessing for categorical data
+categorical_transformer = Pipeline(steps=[
+    ('onehot', OneHotEncoder(handle_unknown='ignore'))
+])
+
+# Preprocessing for numerical data
+numerical_transformer = Pipeline(steps=[
+    ('scaler', StandardScaler())
+])
+
+# Bundle preprocessing for numerical and categorical data
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', numerical_transformer, numerical_features),
+        ('cat', categorical_transformer, categorical_features)
+    ])
+
+# Apply preprocessing
+X = dataset.drop('SalePrice', axis=1)
+y = dataset['SalePrice']
+# Example of feature engineering
+# For instance, create a new feature 'TotalArea' by adding 'TotalBsmtSF' and '1stFlrSF'
+dataset['TotalArea'] = dataset['TotalBsmtSF']
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Example visualization
+# For instance, visualize the distribution of SalePrice
+plt.figure(figsize=(10, 6))
+sns.histplot(dataset['SalePrice'], kde=True)
+plt.title('Distribution of SalePrice')
+plt.xlabel('SalePrice')
+plt.ylabel('Frequency')
+plt.show()
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Example visualization
+# For instance, visualize the distribution of SalePrice
+plt.figure(figsize=(10, 6))
+sns.histplot(dataset['SalePrice'], kde=True)
+plt.title('Distribution of SalePrice')
+plt.xlabel('SalePrice')
+plt.ylabel('Frequency')
+plt.show()
+# Identify columns with string data type
+string_columns = dataset.select_dtypes(include=['object']).columns
+
+# Convert string columns to float
+for col in string_columns:
+    dataset[col] = pd.to_numeric(dataset[col], errors='coerce')
+
+# Now, if there are any non-convertible values (e.g., non-numeric strings like 'N/A'), they will be converted to NaN.
+from sklearn.impute import SimpleImputer
+
+# Initialize the imputer
+imputer = SimpleImputer(strategy='mean')  # You can choose 'median' or 'most_frequent' as well
+
+# Fit and transform the training data
+X_train_imputed = imputer.fit_transform(X_train)
+
+# Transform the testing data
+X_test_imputed = imputer.transform(X_test)
+# Check for missing values
+missing_values = dataset.isnull().sum()
+print(missing_values)
+
+# Handle missing values (e.g., impute with mean)
+dataset.fillna(dataset.mean(), inplace=True)
+
+# Check for infinity or large values
+print(dataset.describe())
+
+# Train your model after handling missing values and ensuring no infinity or large values are present
+import numpy as np
+from sklearn.model_selection import cross_val_score
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+
+# Assuming X_train and y_train are your feature and target datasets
+# Replace NaN values with mean of each column
+imputer = SimpleImputer(strategy='mean')
+X_train_imputed = imputer.fit_transform(X_train)
+
+# Scale the features
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train_imputed)
+
+# Initialize the RandomForestRegressor model
+model = RandomForestRegressor()
+
+# Create a pipeline
+pipeline = Pipeline([('imputer', imputer), ('scaler', scaler), ('model', model)])
+
+# Perform cross-validation
+cv_scores = cross_val_score(pipeline, X_train, y_train, cv=5)
+print("Cross-Validation Scores:", cv_scores)
+print("Mean Score:", np.mean(cv_scores))
+
+import numpy as np
+from sklearn.model_selection import cross_val_score
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.datasets import make_classification
+
+# Generate sample data
+X, y = make_classification(n_samples=1000, n_features=20, random_state=42)
+
+# Initialize models
+models = [
+    ('Random Forest', RandomForestClassifier()),
+    ('Gradient Boosting', GradientBoostingClassifier()),
+    ('Support Vector Machine', SVC()),
+    ('K-Nearest Neighbors', KNeighborsClassifier())
+]
+
+# Iterate over models
+for name, model in models:
+    # Create pipeline
+    pipeline = Pipeline([
+        ('imputer', SimpleImputer(strategy='mean')),
+        ('scaler', StandardScaler()),
+        ('model', model)
+    ])
+    
+    # Perform cross-validation
+    cv_scores = cross_val_score(pipeline, X, y, cv=5)
+    print(f"{name} Cross-Validation Scores:", cv_scores)
+    print(f"{name} Mean Score:", np.mean(cv_scores))
+    print()
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+
+# Define the best model based on cross-validation scores
+best_model = GradientBoostingClassifier()
+
+# Fit the best model on the entire dataset
+best_model.fit(X, y)
+
+# Make predictions on the same dataset for evaluation
+y_pred = best_model.predict(X)
+
+# Calculate evaluation metrics
+accuracy = accuracy_score(y, y_pred)
+precision = precision_score(y, y_pred)
+recall = recall_score(y, y_pred)
+f1 = f1_score(y, y_pred)
+conf_matrix = confusion_matrix(y, y_pred)
+
+# Print evaluation metrics
+print("Evaluation Metrics for the Best Model:")
+print("Accuracy:", accuracy)
+print("Precision:", precision)
+print("Recall:", recall)
+print("F1-score:", f1)
+print("Confusion Matrix:")
+print(conf_matrix)
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Define evaluation metrics
+metrics = ['Accuracy', 'Precision', 'Recall', 'F1-score']
+scores = [accuracy, precision, recall, f1]
+
+# Plot evaluation metrics
+plt.figure(figsize=(10, 6))
+sns.barplot(x=metrics, y=scores, palette='viridis')
+plt.title('Model Evaluation Metrics')
+plt.ylabel('Score')
+plt.xlabel('Metrics')
+plt.ylim(0, 1)  # Set the y-axis limit to be between 0 and 1
+plt.show()
+
+# Plot confusion matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix, annot=True, cmap='Blues', fmt='g')
+plt.title('Confusion Matrix')
+plt.xlabel('Predicted Labels')
+plt.ylabel('True Labels')
+plt.show()
